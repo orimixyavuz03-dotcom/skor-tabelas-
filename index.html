@@ -2,9 +2,13 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Halısaha Skor Tabelası — Retro Split-Flap</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
   :root{
     --casing: #14120E;
@@ -24,23 +28,12 @@
 
   html, body {
     margin: 0; padding: 0;
-    background: transparent; /* Yayın için şeffaf arka plan */
+    background: transparent;
     font-family: 'Archivo Narrow', sans-serif;
     color: var(--paper);
     width: 100%;
     height: 100%;
     overflow: hidden;
-  }
-
-  body.preview-checker {
-    background-image:
-      linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
-      linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
-      linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
-    background-size: 24px 24px;
-    background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
-    background-color: #1a1a1a;
   }
 
   .stage {
@@ -274,17 +267,17 @@
     white-space: nowrap;
   }
 
-  /* ---------- Hint + Control Panel Overlay ---------- */
+  /* ---------- Control Panel Overlay (Yayına Asla Yansımaz) ---------- */
   .gear-hint {
     font-size: 11px;
     color: var(--muted);
     margin-top: 5px;
     letter-spacing: .3px;
-    opacity: 0; /* Yayın ekranında kirlilik yapmaması için varsayılan gizli */
+    opacity: 0;
     transition: opacity .2s ease;
     text-align: center;
   }
-  .stage:hover .gear-hint { opacity: .7; } /* Fare gelince görünür */
+  .stage:hover .gear-hint { opacity: .7; }
 
   .gear-hint kbd {
     background: rgba(255,255,255,0.08);
@@ -294,7 +287,6 @@
     border: 1px solid rgba(255,255,255,0.15);
   }
 
-  /* Panel artık akış dışına alıntılandı (fixed) - tabelanın boyutunu asla bozmaz */
   #controls {
     display: none;
     position: fixed;
@@ -347,8 +339,6 @@
 
   .shortcuts { color: var(--muted); font-size: 11px; line-height: 1.6; }
   .shortcuts b { color: var(--paper); }
-
-  .checker-toggle { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -401,7 +391,7 @@
       </div>
     </div>
 
-    <div class="gear-hint">Kontrol paneli: <kbd>C</kbd></div>
+    <div class="gear-hint">Yönetici Paneli Aç/Kapat: <kbd>C</kbd></div>
 
     <div id="controls">
       <div class="ctrl-row">
@@ -444,14 +434,6 @@
 
       <div class="divider"></div>
 
-      <div class="ctrl-row">
-        <label class="checker-toggle">
-          <input type="checkbox" id="checkerToggle"> Arka plan şeffaflığını test et
-        </label>
-      </div>
-
-      <div class="divider"></div>
-
       <div class="shortcuts">
         <b>Kısayollar:</b> Takım A: <b>Q</b> (+1) / <b>A</b> (-1) &nbsp;|&nbsp;
         Takım B: <b>P</b> (+1) / <b>L</b> (-1) &nbsp;|&nbsp;
@@ -464,7 +446,12 @@
   </div>
 
 <script>
-  const STORAGE_KEY = 'skorTabelasiState_retro_v4';
+  // ---------- Canlı Bulut Senkronizasyonu (Firebase Realtime altyapısı) ----------
+  const firebaseConfig = {
+    databaseURL: "https://halisaha-var-default-rtdb.europe-west1.firebasedatabase.app"
+  };
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  const db = firebase.database().ref("match_live");
 
   let state = {
     teamAName: 'EV SAHİBİ', teamBName: 'DEPLASMAN',
@@ -477,10 +464,34 @@
     panelVisible: false
   };
 
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch(e) {} }
+  let isLocalChange = false;
 
-  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function pushToCloud() {
+    isLocalChange = true;
+    db.set({
+      teamAName: state.teamAName,
+      teamBName: state.teamBName,
+      teamAColor: state.teamAColor,
+      teamBColor: state.teamBColor,
+      competition: state.competition,
+      scoreA: state.scoreA,
+      scoreB: state.scoreB,
+      half: state.half,
+      elapsed: state.elapsed,
+      running: state.running,
+      timestamp: Date.now()
+    }).then(() => { isLocalChange = false; });
+  }
+
+  db.on('value', (snapshot) => {
+    if (isLocalChange) return;
+    const data = snapshot.val();
+    if (data) {
+      Object.assign(state, data);
+      render(true);
+    }
+  });
+
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
   const $ = id => document.getElementById(id);
@@ -491,7 +502,6 @@
   const competitionEl = $('competition');
   const controls = $('controls');
   const startPauseBtn = $('startPause');
-  const checkerToggle = $('checkerToggle');
 
   const tileA10 = $('tileA10'), tileA1 = $('tileA1');
   const tileB10 = $('tileB10'), tileB1 = $('tileB1');
@@ -589,18 +599,18 @@
 
   function incScore(team) {
     if (team === 'A') state.scoreA++; else state.scoreB++;
-    render(true); save();
+    render(true); pushToCloud();
   }
   function decScore(team) {
     if (team === 'A') state.scoreA = Math.max(0, state.scoreA - 1);
     else state.scoreB = Math.max(0, state.scoreB - 1);
-    render(true); save();
+    render(true); pushToCloud();
   }
 
   function toggleRunning() {
     if (state.half === 'HT' || state.half === 'FT') return;
     state.running = !state.running;
-    render(false); save();
+    render(false); pushToCloud();
   }
 
   function resetClock() {
@@ -609,7 +619,7 @@
     else state.elapsed = 0;
 
     state.running = false;
-    render(false); save();
+    render(false); pushToCloud();
   }
 
   const HALF_ORDER = [1, 'HT', 2, 'FT'];
@@ -628,31 +638,32 @@
       state.running = false; 
     }
     state.half = next;
-    render(false); save();
+    render(false); pushToCloud();
   }
 
   function togglePanel() {
     state.panelVisible = !state.panelVisible;
-    render(false); save();
+    render(false);
   }
 
   setInterval(() => {
     if (state.running) {
       state.elapsed++;
       clockEl.innerHTML = formatClock();
-      save();
+      // Buluta çok yük binmemesi için süreyi sadece her 5 saniyede bir veya duraklatıldığında senkronize et
+      if (state.elapsed % 5 === 0) pushToCloud();
     }
   }, 1000);
 
-  nameA.addEventListener('blur', () => { state.teamAName = nameA.textContent.trim() || 'EV SAHİBİ'; render(false); save(); });
-  nameB.addEventListener('blur', () => { state.teamBName = nameB.textContent.trim() || 'DEPLASMAN'; render(false); save(); });
+  nameA.addEventListener('blur', () => { state.teamAName = nameA.textContent.trim() || 'EV SAHİBİ'; render(false); pushToCloud(); });
+  nameB.addEventListener('blur', () => { state.teamBName = nameB.textContent.trim() || 'DEPLASMAN'; render(false); pushToCloud(); });
   nameA.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameA.blur(); } });
   nameB.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameB.blur(); } });
-  competitionEl.addEventListener('blur', () => { state.competition = competitionEl.textContent.trim() || 'HALI SAHA LİGİ'; render(false); save(); });
+  competitionEl.addEventListener('blur', () => { state.competition = competitionEl.textContent.trim() || 'HALI SAHA LİGİ'; render(false); pushToCloud(); });
   competitionEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); competitionEl.blur(); } });
 
-  colorA.addEventListener('input', () => { state.teamAColor = colorA.value; render(false); save(); });
-  colorB.addEventListener('input', () => { state.teamBColor = colorB.value; render(false); save(); });
+  colorA.addEventListener('input', () => { state.teamAColor = colorA.value; render(false); pushToCloud(); });
+  colorB.addEventListener('input', () => { state.teamBColor = colorB.value; render(false); pushToCloud(); });
 
   $('plusA').addEventListener('click', () => incScore('A'));
   $('minusA').addEventListener('click', () => decScore('A'));
@@ -661,10 +672,6 @@
   startPauseBtn.addEventListener('click', toggleRunning);
   $('resetClock').addEventListener('click', resetClock);
   $('cycleHalf').addEventListener('click', cycleHalf);
-
-  checkerToggle.addEventListener('change', () => {
-    document.body.classList.toggle('preview-checker', checkerToggle.checked);
-  });
 
   document.addEventListener('keydown', e => {
     if (document.activeElement.isContentEditable) return;
