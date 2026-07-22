@@ -6,6 +6,8 @@
 <title>Halısaha Skor Tabelası — Retro Split-Flap</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<!-- Canlı Haberleşme Kütüphanesi -->
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
   :root {
     --casing: #14120E;
@@ -213,16 +215,14 @@
     font-weight: 600;
     cursor: pointer;
   }
-  .live-url-box {
-    width: 100%;
-    background: #0d0c0a;
-    border: 1px solid var(--brass);
-    color: var(--brass-light);
-    padding: 6px;
-    font-family: monospace;
+  .status-badge {
     font-size: 11px;
-    border-radius: 4px;
-    margin-top: 5px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: #332b1d;
+    color: var(--brass-light);
+    margin-top: 6px;
+    display: inline-block;
   }
 </style>
 </head>
@@ -287,79 +287,103 @@
         <button class="btn" onclick="toggleClock()">Başlat / Duraklat</button>
         <button class="btn" onclick="nextHalf()">Devre Değiştir</button>
       </div>
-      <div style="margin-top:10px;">
-        <span style="font-size:11px; color:var(--muted);">Telefona Kopyalanacak Yayın Linki:</span>
-        <input type="text" class="live-url-box" id="liveUrl" readonly onclick="this.select()">
+      <div style="text-align:center;">
+        <span class="status-badge" id="netStatus">Bağlantı Kuruluyor...</span>
       </div>
     </div>
   </div>
 
 <script>
-  // URL Parametrelerini oku
-  const params = new URLSearchParams(window.location.search);
-  
-  let scoreA = parseInt(params.get('sa')) || 0;
-  let scoreB = parseInt(params.get('sb')) || 0;
-  let teamA = params.get('ta') || 'EV SAHİBİ';
-  let teamB = params.get('tb') || 'DEPLASMAN';
-  let time = parseInt(params.get('t')) || 0;
-  let running = params.get('r') === '1';
-  let half = params.get('h') || '1. YARI';
+  let state = {
+    scoreA: 0, scoreB: 0,
+    teamA: 'EV SAHİBİ', teamB: 'DEPLASMAN',
+    time: 0, running: false, half: '1. YARI'
+  };
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
   function render() {
-    document.getElementById('tA10').textContent = Math.floor(scoreA / 10);
-    document.getElementById('tA1').textContent = scoreA % 10;
-    document.getElementById('tB10').textContent = Math.floor(scoreB / 10);
-    document.getElementById('tB1').textContent = scoreB % 10;
+    document.getElementById('tA10').textContent = Math.floor(state.scoreA / 10);
+    document.getElementById('tA1').textContent = state.scoreA % 10;
+    document.getElementById('tB10').textContent = Math.floor(state.scoreB / 10);
+    document.getElementById('tB1').textContent = state.scoreB % 10;
 
-    document.getElementById('nameA').textContent = teamA;
-    document.getElementById('nameB').textContent = teamB;
-    document.getElementById('crestA').textContent = teamA.substring(0,2).toUpperCase();
-    document.getElementById('crestB').textContent = teamB.substring(0,2).toUpperCase();
+    document.getElementById('nameA').textContent = state.teamA;
+    document.getElementById('nameB').textContent = state.teamB;
+    document.getElementById('crestA').textContent = state.teamA.substring(0,2).toUpperCase();
+    document.getElementById('crestB').textContent = state.teamB.substring(0,2).toUpperCase();
 
-    const m = Math.floor(time / 60);
-    const s = time % 60;
+    const m = Math.floor(state.time / 60);
+    const s = state.time % 60;
     document.getElementById('clock').textContent = pad(m) + ':' + pad(s);
-    document.getElementById('halfLabel').textContent = half;
-    document.getElementById('lamp').classList.toggle('on', running);
+    document.getElementById('halfLabel').textContent = state.half;
+    document.getElementById('lamp').classList.toggle('on', state.running);
+  }
 
-    // Telefon için canlı adres üret
-    const url = new URL(window.location.origin + window.location.pathname);
-    url.searchParams.set('sa', scoreA);
-    url.searchParams.set('sb', scoreB);
-    url.searchParams.set('ta', teamA);
-    url.searchParams.set('tb', teamB);
-    url.searchParams.set('t', time);
-    url.searchParams.set('r', running ? '1' : '0');
-    url.searchParams.set('h', half);
-    document.getElementById('liveUrl').value = url.href;
+  // PeerJS Bağlantı Mantığı (Sabit ID ile Eşleşme)
+  const peer = new Peer('orimix-halisaha-scorebug-key-99');
+  let activeConn = null;
+
+  peer.on('open', (id) => {
+    document.getElementById('netStatus').textContent = 'Yönetici Modu Aktif (Telefona Bağlanmaya Hazır)';
+  });
+
+  // Eğer bu ID doluysa (yani bu bilgisayarsa) telefon izleyici olarak bağlanır
+  peer.on('error', (err) => {
+    if (err.type === 'unavailable-id') {
+      const receiverPeer = new Peer();
+      receiverPeer.on('open', () => {
+        document.getElementById('netStatus').textContent = 'Telefon Modu: Canlı Veri Bekleniyor...';
+        const conn = receiverPeer.connect('orimix-halisaha-scorebug-key-99');
+        conn.on('data', (data) => {
+          state = data;
+          render();
+        });
+        conn.on('open', () => {
+          document.getElementById('netStatus').textContent = 'Yayına Bağlandı!';
+        });
+      });
+    }
+  });
+
+  peer.on('connection', (conn) => {
+    activeConn = conn;
+    document.getElementById('netStatus').textContent = 'Telefon Yayına Bağlandı!';
+    sendState();
+  });
+
+  function sendState() {
+    if (activeConn && activeConn.open) {
+      activeConn.send(state);
+    }
   }
 
   function inc(team, val) {
-    if (team === 'a') scoreA = Math.max(0, scoreA + val);
-    if (team === 'b') scoreB = Math.max(0, scoreB + val);
-    render();
+    if (team === 'a') state.scoreA = Math.max(0, state.scoreA + val);
+    if (team === 'b') state.scoreB = Math.max(0, state.scoreB + val);
+    render(); sendState();
   }
 
-  function toggleClock() { running = !running; render(); }
+  function toggleClock() { state.running = !state.running; render(); sendState(); }
 
   function nextHalf() {
-    if (half === '1. YARI') { half = '2. YARI'; time = 25 * 60; }
-    else { half = '1. YARI'; time = 0; }
-    running = false;
-    render();
+    if (state.half === '1. YARI') { state.half = '2. YARI'; state.time = 25 * 60; }
+    else { state.half = '1. YARI'; state.time = 0; }
+    state.running = false;
+    render(); sendState();
   }
 
   setInterval(() => {
-    if (running) { time++; render(); }
+    if (state.running) {
+      state.time++;
+      render();
+      if (state.time % 2 === 0) sendState();
+    }
   }, 1000);
 
   document.addEventListener('keydown', e => {
     if (e.key.toLowerCase() === 'c') {
-      const ctrl = document.getElementById('controls');
-      ctrl.classList.toggle('visible');
+      document.getElementById('controls').classList.toggle('visible');
     }
   });
 
