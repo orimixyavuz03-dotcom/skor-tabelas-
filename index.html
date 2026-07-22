@@ -6,6 +6,8 @@
 <title>Halısaha Skor Tabelası</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<!-- Kesintisiz Canlı Yayın Altyapısı (PubNub) -->
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
 <style>
   :root {
     --casing: #14120E;
@@ -281,7 +283,16 @@
   </div>
 
 <script>
-  const API_URL = "https://api.npoint.io/467389c95b6a3ffaa6ff";
+  // PubNub Canlı Yayın Motoru
+  const pubnub = new PubNub({
+    publishKey: "pub-c-49a37e59-39b0-4a87-a20c-c4ffc375eb0b",
+    subscribeKey: "sub-c-48be040d-d4a3-4857-9db6-e94aa7fb880b",
+    userId: "user-" + Math.floor(Math.random() * 10000)
+  });
+
+  const CHANNEL = "orimix_halisaha_channel";
+
+  pubnub.subscribe({ channels: [CHANNEL] });
 
   let state = {
     sa: 0, sb: 0,
@@ -309,66 +320,53 @@
     document.getElementById('lamp').classList.toggle('on', state.r);
   }
 
-  // Veriyi Buluta Gönder (Bilgisayar Çalıştırır)
-  function pushState() {
+  // Bilgisayardan Veriyi Anında Yayınla
+  function broadcast() {
     render();
-    fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state)
-    }).catch(e => console.error(e));
+    pubnub.publish({
+      channel: CHANNEL,
+      message: state
+    });
   }
 
-  // Veriyi Buluttan Çek (Telefon Çalıştırır)
-  function pullState() {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => {
-        if(data && typeof data.sa !== 'undefined') {
-          state = data;
-          render();
-        }
-      }).catch(e => console.error(e));
-  }
+  // Telefonda / Yayında Veriyi Dinle ve Güncelle
+  pubnub.addListener({
+    message: function(event) {
+      if (event.message) {
+        state = event.message;
+        render();
+      }
+    }
+  });
 
   function inc(team, val) {
     if (team === 'a') state.sa = Math.max(0, state.sa + val);
     if (team === 'b') state.sb = Math.max(0, state.sb + val);
-    pushState();
+    broadcast();
   }
 
-  function toggleClock() { state.r = !state.r; pushState(); }
+  function toggleClock() { state.r = !state.r; broadcast(); }
 
   function nextHalf() {
     if (state.h === '1. YARI') { state.h = '2. YARI'; state.t = 25 * 60; }
     else { state.h = '1. YARI'; state.t = 0; }
     state.r = false;
-    pushState();
+    broadcast();
   }
 
   function resetAll() {
     state = { sa: 0, sb: 0, ta: 'EV SAHİBİ', tb: 'DEPLASMAN', t: 0, r: false, h: '1. YARI' };
-    pushState();
+    broadcast();
   }
 
-  // Bilgisayarda Zaman İlerlemesi
+  // Bilgisayarda Süre İlerlemesi
   setInterval(() => {
-    if (state.r) {
+    if (state.r && document.getElementById('controls').classList.contains('visible')) {
       state.t++;
       render();
-      if (state.t % 2 === 0) pushState();
+      if (state.t % 2 === 0) broadcast();
     }
   }, 1000);
-
-  // Telefonda Her 1.5 Saniyede Bir Güncelleme
-  setInterval(() => {
-    // Sadece kontrol paneli gizliyken (yani telefonda/yayındayken) sürekli veri çek
-    if (!document.getElementById('controls').classList.contains('visible') && !state.r) {
-      pullState();
-    } else if (!document.getElementById('controls').classList.contains('visible') && state.r) {
-      pullState();
-    }
-  }, 1500);
 
   document.addEventListener('keydown', e => {
     if (e.key.toLowerCase() === 'c') {
@@ -377,7 +375,6 @@
   });
 
   render();
-  pullState();
 </script>
 </body>
 </html>
