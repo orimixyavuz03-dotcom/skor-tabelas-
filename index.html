@@ -6,11 +6,8 @@
 <title>Halısaha Skor Tabelası — Retro Split-Flap</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
-<!-- Firebase CDN -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
-  :root{
+  :root {
     --casing: #14120E;
     --casing-2: #241F17;
     --tile: #EDE6D6;
@@ -46,7 +43,6 @@
     height: 100%;
   }
 
-  /* ---------- Board ---------- */
   .board {
     position: relative;
     width: 580px;
@@ -69,7 +65,6 @@
   .rivet.bl { bottom: 10px; left: 10px; }
   .rivet.br { bottom: 10px; right: 10px; }
 
-  /* ---------- Header row ---------- */
   .board-header {
     display: flex;
     align-items: center;
@@ -85,22 +80,13 @@
     border-radius: 50%;
     background: #3a1512;
     border: 1.5px solid var(--brass);
-    box-shadow: inset 0 0 3px rgba(0,0,0,.6);
-    transition: background .3s ease, box-shadow .3s ease;
+    transition: background .3s ease;
   }
   .lamp.on {
     background: var(--lamp-red);
-    box-shadow: 0 0 8px 2px rgba(194,68,53,.75), inset 0 0 3px rgba(0,0,0,.3);
-    animation: flicker 2.6s infinite;
-  }
-  @keyframes flicker {
-    0%, 100% { opacity: 1; }
-    92% { opacity: 1; }
-    94% { opacity: .55; }
-    96% { opacity: 1; }
+    box-shadow: 0 0 8px 2px rgba(194,68,53,.75);
   }
   .lamp-label {
-    font-family: 'Archivo Narrow', sans-serif;
     font-weight: 700;
     font-size: 12px;
     letter-spacing: 2px;
@@ -109,22 +95,13 @@
   }
 
   .competition {
-    font-family: 'Archivo Narrow', sans-serif;
     font-weight: 600;
     font-size: 12.5px;
     letter-spacing: 2px;
     color: var(--muted);
     text-transform: uppercase;
-    outline: none;
-    cursor: text;
-    max-width: 320px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
-  .competition:focus { color: var(--brass-light); }
 
-  /* ---------- Main row ---------- */
   .board-main {
     display: flex;
     align-items: center;
@@ -132,13 +109,7 @@
     gap: 10px;
   }
 
-  .team {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    min-width: 0;
-  }
+  .team { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
   .team-b { flex-direction: row-reverse; }
 
   .crest {
@@ -152,7 +123,6 @@
     font-family: 'IBM Plex Mono', monospace;
     font-weight: 700;
     font-size: 10px;
-    letter-spacing: .5px;
     color: var(--paper);
   }
   .team-b .crest { box-shadow: 0 0 0 2px var(--team-b) inset; }
@@ -160,75 +130,29 @@
   .name-wrap { min-width: 0; display: flex; flex-direction: column; }
   .team-b .name-wrap { align-items: flex-end; }
   .name {
-    font-family: 'Archivo Narrow', sans-serif;
     font-weight: 700;
     font-size: 18px;
     letter-spacing: 1px;
     text-transform: uppercase;
-    outline: none;
-    max-width: 140px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: text;
     color: var(--paper);
   }
-  .name:focus { color: var(--brass-light); }
-  .name-sub {
-    font-size: 9.5px;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    margin-top: 1px;
-  }
+  .name-sub { font-size: 9.5px; letter-spacing: 1.5px; color: var(--muted); margin-top: 1px; }
 
-  /* ---------- Flap tiles ---------- */
   .tile-group { display: flex; gap: 3px; flex-shrink: 0; }
 
   .flap-tile {
     position: relative;
     width: 30px; height: 42px;
-    perspective: 220px;
     border-radius: 3px;
-    box-shadow: 0 2px 5px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.4);
-  }
-  .flap-tile::after {
-    content: '';
-    position: absolute;
-    left: 0; right: 0; top: 50%;
-    height: 2px;
-    background: rgba(0,0,0,.4);
-    transform: translateY(-1px);
-    z-index: 5;
-    pointer-events: none;
-  }
-  .flap-inner {
-    position: relative;
-    width: 100%; height: 100%;
-    transform-style: preserve-3d;
-    transform: rotateX(0deg);
-  }
-  .flap-inner.flip { animation: flapRotate .45s ease-in-out; }
-  @keyframes flapRotate {
-    0%   { transform: rotateX(0deg);    filter: brightness(1); }
-    45%  { filter: brightness(.65); }
-    50%  { transform: rotateX(-90deg);  filter: brightness(.5); }
-    55%  { filter: brightness(.65); }
-    100% { transform: rotateX(-180deg); filter: brightness(1); }
-  }
-  .flap-front, .flap-back {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
     background: var(--tile);
     color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
     font-family: 'IBM Plex Mono', monospace;
     font-weight: 700;
     font-size: 22px;
-    border-radius: 3px;
-    backface-visibility: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,.5);
   }
-  .flap-back { transform: rotateX(180deg); }
 
-  /* ---------- Clock window ---------- */
   .center {
     display: flex;
     flex-direction: column;
@@ -242,51 +166,25 @@
     color: var(--ink);
     border-radius: 3px;
     padding: 6px 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.4), inset 0 0 10px rgba(0,0,0,.08);
-    display: flex;
-    align-items: baseline;
+    box-shadow: 0 2px 5px rgba(0,0,0,.5);
   }
   .clock {
     font-family: 'IBM Plex Mono', monospace;
     font-weight: 700;
     font-size: 20px;
     letter-spacing: 1px;
-    font-variant-numeric: tabular-nums;
   }
-  .clock .colon { animation: blink 1s steps(1) infinite; }
-  @keyframes blink { 50% { opacity: .15; } }
 
   .half-label {
-    font-family: 'Archivo Narrow', sans-serif;
     font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 1.5px;
     color: var(--brass-light);
     margin-top: 6px;
     text-transform: uppercase;
-    white-space: nowrap;
   }
 
-  /* ---------- Control Panel Overlay (Yayına Asla Yansımaz) ---------- */
-  .gear-hint {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 5px;
-    letter-spacing: .3px;
-    opacity: 0;
-    transition: opacity .2s ease;
-    text-align: center;
-  }
-  .stage:hover .gear-hint { opacity: .7; }
-
-  .gear-hint kbd {
-    background: rgba(255,255,255,0.08);
-    border-radius: 3px;
-    padding: 1px 6px;
-    font-family: 'IBM Plex Mono', monospace;
-    border: 1px solid rgba(255,255,255,0.15);
-  }
-
+  /* Control Panel */
   #controls {
     display: none;
     position: fixed;
@@ -299,395 +197,173 @@
     padding: 14px 16px;
     width: 580px;
     font-size: 13px;
-    font-family: 'Archivo Narrow', sans-serif;
     box-shadow: 0 20px 50px rgba(0,0,0,0.8);
     z-index: 999;
   }
   #controls.visible { display: block; }
 
-  .ctrl-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .ctrl-row:last-child { margin-bottom: 0; }
+  .ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
   .ctrl-group { display: flex; align-items: center; gap: 8px; }
-  .ctrl-label { color: var(--muted); min-width: 90px; font-size: 12.5px; }
-
   button.btn {
     background: var(--casing-2);
     color: var(--paper);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 5px;
     padding: 5px 10px;
-    font-family: 'Archivo Narrow', sans-serif;
-    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
   }
-  button.btn:hover { background: #322b20; }
-  button.btn.brass { border-color: var(--brass); color: var(--brass-light); }
-  button.btn.wide { padding: 5px 16px; }
-
-  input[type="color"] {
-    width: 28px; height: 24px; border: none; border-radius: 4px; background: none; cursor: pointer; padding: 0;
+  .live-url-box {
+    width: 100%;
+    background: #0d0c0a;
+    border: 1px solid var(--brass);
+    color: var(--brass-light);
+    padding: 6px;
+    font-family: monospace;
+    font-size: 11px;
+    border-radius: 4px;
+    margin-top: 5px;
   }
-
-  .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 0; }
-
-  .shortcuts { color: var(--muted); font-size: 11px; line-height: 1.6; }
-  .shortcuts b { color: var(--paper); }
 </style>
 </head>
 <body>
 
   <div class="stage">
-
-    <div class="board" id="scorebug">
+    <div class="board">
       <span class="rivet tl"></span><span class="rivet tr"></span>
       <span class="rivet bl"></span><span class="rivet br"></span>
 
       <div class="board-header">
-        <div class="lamp-unit">
-          <span class="lamp" id="lamp"></span>
-          <span class="lamp-label">Canlı</span>
-        </div>
-        <div class="competition" id="competition" contenteditable="true" spellcheck="false">HALI SAHA LİGİ</div>
+        <div class="lamp-unit"><span class="lamp" id="lamp"></span><span class="lamp-label">Canlı</span></div>
+        <div class="competition" id="competition">HALI SAHA LİGİ</div>
       </div>
 
       <div class="board-main">
         <div class="team team-a">
           <div class="crest" id="crestA">TA</div>
           <div class="name-wrap">
-            <div class="name" id="nameA" contenteditable="true" spellcheck="false">EV SAHİBİ</div>
+            <div class="name" id="nameA">EV SAHİBİ</div>
             <div class="name-sub">EV SAHİBİ</div>
           </div>
           <div class="tile-group">
-            <div class="flap-tile"><div class="flap-inner" id="tileA10"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
-            <div class="flap-tile"><div class="flap-inner" id="tileA1"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+            <div class="flap-tile" id="tA10">0</div>
+            <div class="flap-tile" id="tA1">0</div>
           </div>
         </div>
 
         <div class="center">
-          <div class="clock-window">
-            <div class="clock" id="clock">00<span class="colon">:</span>00</div>
-          </div>
+          <div class="clock-window"><div class="clock" id="clock">00:00</div></div>
           <div class="half-label" id="halfLabel">1. YARI</div>
         </div>
 
         <div class="team team-b">
           <div class="crest" id="crestB">TB</div>
           <div class="name-wrap">
-            <div class="name" id="nameB" contenteditable="true" spellcheck="false">DEPLASMAN</div>
+            <div class="name" id="nameB">DEPLASMAN</div>
             <div class="name-sub">DEPLASMAN</div>
           </div>
           <div class="tile-group">
-            <div class="flap-tile"><div class="flap-inner" id="tileB10"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
-            <div class="flap-tile"><div class="flap-inner" id="tileB1"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+            <div class="flap-tile" id="tB10">0</div>
+            <div class="flap-tile" id="tB1">0</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="gear-hint">Yönetici Paneli Aç/Kapat: <kbd>C</kbd></div>
-
     <div id="controls">
       <div class="ctrl-row">
         <div class="ctrl-group">
-          <span class="ctrl-label">Takım A rengi</span>
-          <input type="color" id="colorA" value="#2FA84F">
+          <span>Takım A Skor:</span>
+          <button class="btn" onclick="inc('a', -1)">-</button>
+          <button class="btn" onclick="inc('a', 1)">+</button>
         </div>
         <div class="ctrl-group">
-          <span class="ctrl-label">Takım B rengi</span>
-          <input type="color" id="colorB" value="#3B7DDB">
+          <span>Takım B Skor:</span>
+          <button class="btn" onclick="inc('b', -1)">-</button>
+          <button class="btn" onclick="inc('b', 1)">+</button>
         </div>
       </div>
-
-      <div class="divider"></div>
-
       <div class="ctrl-row">
-        <div class="ctrl-group">
-          <span class="ctrl-label">Takım A skor</span>
-          <button class="btn" id="minusA">−</button>
-          <button class="btn" id="plusA">+</button>
-        </div>
-        <div class="ctrl-group">
-          <span class="ctrl-label">Takım B skor</span>
-          <button class="btn" id="minusB">−</button>
-          <button class="btn" id="plusB">+</button>
-        </div>
+        <button class="btn" onclick="toggleClock()">Başlat / Duraklat</button>
+        <button class="btn" onclick="nextHalf()">Devre Değiştir</button>
       </div>
-
-      <div class="divider"></div>
-
-      <div class="ctrl-row">
-        <div class="ctrl-group">
-          <button class="btn brass wide" id="startPause">Başlat</button>
-          <button class="btn" id="resetClock">Sıfırla</button>
-        </div>
-        <div class="ctrl-group">
-          <button class="btn" id="cycleHalf">Devre değiştir</button>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="shortcuts">
-        <b>Kısayollar:</b> Takım A: <b>Q</b> (+1) / <b>A</b> (-1) &nbsp;|&nbsp;
-        Takım B: <b>P</b> (+1) / <b>L</b> (-1) &nbsp;|&nbsp;
-        <b>Boşluk:</b> Başlat/Duraklat &nbsp;|&nbsp;
-        <b>R:</b> Sıfırla &nbsp;|&nbsp;
-        <b>H:</b> Devre Değiştir &nbsp;|&nbsp;
-        <b>C:</b> Paneli Gizle/Göster
+      <div style="margin-top:10px;">
+        <span style="font-size:11px; color:var(--muted);">Telefona Kopyalanacak Yayın Linki:</span>
+        <input type="text" class="live-url-box" id="liveUrl" readonly onclick="this.select()">
       </div>
     </div>
   </div>
 
 <script>
-  // ---------- Canlı Bulut Senkronizasyonu (Firebase Realtime altyapısı) ----------
-  const firebaseConfig = {
-    databaseURL: "https://halisaha-var-default-rtdb.europe-west1.firebasedatabase.app"
-  };
-  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-  const db = firebase.database().ref("match_live");
-
-  let state = {
-    teamAName: 'EV SAHİBİ', teamBName: 'DEPLASMAN',
-    teamAColor: '#2FA84F', teamBColor: '#3B7DDB',
-    competition: 'HALI SAHA LİGİ',
-    scoreA: 0, scoreB: 0,
-    half: 1, 
-    elapsed: 0,
-    running: false,
-    panelVisible: false
-  };
-
-  let isLocalChange = false;
-
-  function pushToCloud() {
-    isLocalChange = true;
-    db.set({
-      teamAName: state.teamAName,
-      teamBName: state.teamBName,
-      teamAColor: state.teamAColor,
-      teamBColor: state.teamBColor,
-      competition: state.competition,
-      scoreA: state.scoreA,
-      scoreB: state.scoreB,
-      half: state.half,
-      elapsed: state.elapsed,
-      running: state.running,
-      timestamp: Date.now()
-    }).then(() => { isLocalChange = false; });
-  }
-
-  db.on('value', (snapshot) => {
-    if (isLocalChange) return;
-    const data = snapshot.val();
-    if (data) {
-      Object.assign(state, data);
-      render(true);
-    }
-  });
+  // URL Parametrelerini oku
+  const params = new URLSearchParams(window.location.search);
+  
+  let scoreA = parseInt(params.get('sa')) || 0;
+  let scoreB = parseInt(params.get('sb')) || 0;
+  let teamA = params.get('ta') || 'EV SAHİBİ';
+  let teamB = params.get('tb') || 'DEPLASMAN';
+  let time = parseInt(params.get('t')) || 0;
+  let running = params.get('r') === '1';
+  let half = params.get('h') || '1. YARI';
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
-  const $ = id => document.getElementById(id);
-  const nameA = $('nameA'), nameB = $('nameB');
-  const crestA = $('crestA'), crestB = $('crestB');
-  const colorA = $('colorA'), colorB = $('colorB');
-  const clockEl = $('clock'), halfLabelEl = $('halfLabel'), lamp = $('lamp');
-  const competitionEl = $('competition');
-  const controls = $('controls');
-  const startPauseBtn = $('startPause');
+  function render() {
+    document.getElementById('tA10').textContent = Math.floor(scoreA / 10);
+    document.getElementById('tA1').textContent = scoreA % 10;
+    document.getElementById('tB10').textContent = Math.floor(scoreB / 10);
+    document.getElementById('tB1').textContent = scoreB % 10;
 
-  const tileA10 = $('tileA10'), tileA1 = $('tileA1');
-  const tileB10 = $('tileB10'), tileB1 = $('tileB1');
+    document.getElementById('nameA').textContent = teamA;
+    document.getElementById('nameB').textContent = teamB;
+    document.getElementById('crestA').textContent = teamA.substring(0,2).toUpperCase();
+    document.getElementById('crestB').textContent = teamB.substring(0,2).toUpperCase();
 
-  function initials(name) {
-    const words = name.trim().split(/\s+/).filter(Boolean);
-    if (words.length > 1) return words.map(w => w[0].toUpperCase()).slice(0,3).join('');
-    return (name.trim().slice(0,3) || '??').toUpperCase();
+    const m = Math.floor(time / 60);
+    const s = time % 60;
+    document.getElementById('clock').textContent = pad(m) + ':' + pad(s);
+    document.getElementById('halfLabel').textContent = half;
+    document.getElementById('lamp').classList.toggle('on', running);
+
+    // Telefon için canlı adres üret
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('sa', scoreA);
+    url.searchParams.set('sb', scoreB);
+    url.searchParams.set('ta', teamA);
+    url.searchParams.set('tb', teamB);
+    url.searchParams.set('t', time);
+    url.searchParams.set('r', running ? '1' : '0');
+    url.searchParams.set('h', half);
+    document.getElementById('liveUrl').value = url.href;
   }
 
-  function setTile(tileInner, value, animate) {
-    const front = tileInner.querySelector('.flap-front');
-    const back = tileInner.querySelector('.flap-back');
-    const val = String(value);
-    if (front.textContent === val) return;
-    back.textContent = val;
-    if (!animate) {
-      front.textContent = val;
-      tileInner.classList.remove('flip');
-      return;
-    }
-    tileInner.classList.remove('flip');
-    void tileInner.offsetWidth;
-    tileInner.classList.add('flip');
-    tileInner.addEventListener('animationend', function handler() {
-      tileInner.classList.remove('flip');
-      front.textContent = val;
-      tileInner.removeEventListener('animationend', handler);
-    }, { once: true });
+  function inc(team, val) {
+    if (team === 'a') scoreA = Math.max(0, scoreA + val);
+    if (team === 'b') scoreB = Math.max(0, scoreB + val);
+    render();
   }
 
-  function renderScoreTiles(animate) {
-    setTile(tileA10, Math.floor(state.scoreA / 10), animate);
-    setTile(tileA1, state.scoreA % 10, animate);
-    setTile(tileB10, Math.floor(state.scoreB / 10), animate);
-    setTile(tileB1, state.scoreB % 10, animate);
-  }
+  function toggleClock() { running = !running; render(); }
 
-  function formatClock() {
-    const totalSec = state.elapsed;
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-
-    if (state.half === 1) {
-      if (totalSec < 25 * 60) {
-        return `${pad(m)}<span class="colon">:</span>${pad(s)}`;
-      } else {
-        const extraSec = totalSec - 25 * 60;
-        const extraM = Math.floor(extraSec / 60) + 1;
-        const extraS = extraSec % 60;
-        return `25+${extraM}<span class="colon">:</span>${pad(extraS)}`;
-      }
-    } 
-    else if (state.half === 2) {
-      if (totalSec < 50 * 60) {
-        return `${pad(m)}<span class="colon">:</span>${pad(s)}`;
-      } else {
-        const extraSec = totalSec - 50 * 60;
-        const extraM = Math.floor(extraSec / 60) + 1;
-        const extraS = extraSec % 60;
-        return `50+${extraM}<span class="colon">:</span>${pad(extraS)}`;
-      }
-    } 
-    else {
-      return `${pad(m)}<span class="colon">:</span>${pad(s)}`;
-    }
-  }
-
-  function render(animateScore) {
-    nameA.textContent = state.teamAName;
-    nameB.textContent = state.teamBName;
-    competitionEl.textContent = state.competition;
-    crestA.style.boxShadow = `0 0 0 2px ${state.teamAColor} inset`;
-    crestB.style.boxShadow = `0 0 0 2px ${state.teamBColor} inset`;
-    crestA.textContent = initials(state.teamAName);
-    crestB.textContent = initials(state.teamBName);
-    colorA.value = state.teamAColor;
-    colorB.value = state.teamBColor;
-    renderScoreTiles(animateScore);
-    clockEl.innerHTML = formatClock();
-    halfLabelEl.textContent = halfLabelText();
-    lamp.classList.toggle('on', state.running);
-    startPauseBtn.textContent = state.running ? 'Duraklat' : 'Başlat';
-    controls.classList.toggle('visible', state.panelVisible);
-  }
-
-  function halfLabelText() {
-    switch (state.half) {
-      case 1: return '1. YARI';
-      case 'HT': return 'DEVRE ARASI';
-      case 2: return '2. YARI';
-      case 'FT': return 'MAÇ SONU';
-    }
-  }
-
-  function incScore(team) {
-    if (team === 'A') state.scoreA++; else state.scoreB++;
-    render(true); pushToCloud();
-  }
-  function decScore(team) {
-    if (team === 'A') state.scoreA = Math.max(0, state.scoreA - 1);
-    else state.scoreB = Math.max(0, state.scoreB - 1);
-    render(true); pushToCloud();
-  }
-
-  function toggleRunning() {
-    if (state.half === 'HT' || state.half === 'FT') return;
-    state.running = !state.running;
-    render(false); pushToCloud();
-  }
-
-  function resetClock() {
-    if (state.half === 1) state.elapsed = 0;
-    else if (state.half === 2) state.elapsed = 25 * 60;
-    else state.elapsed = 0;
-
-    state.running = false;
-    render(false); pushToCloud();
-  }
-
-  const HALF_ORDER = [1, 'HT', 2, 'FT'];
-  function cycleHalf() {
-    const idx = (HALF_ORDER.indexOf(state.half) + 1) % HALF_ORDER.length;
-    const next = HALF_ORDER[idx];
-    if (next === 1) { 
-      state.elapsed = 0; 
-      state.running = false; 
-    }
-    else if (next === 2) { 
-      state.elapsed = 25 * 60; 
-      state.running = false; 
-    }
-    else { 
-      state.running = false; 
-    }
-    state.half = next;
-    render(false); pushToCloud();
-  }
-
-  function togglePanel() {
-    state.panelVisible = !state.panelVisible;
-    render(false);
+  function nextHalf() {
+    if (half === '1. YARI') { half = '2. YARI'; time = 25 * 60; }
+    else { half = '1. YARI'; time = 0; }
+    running = false;
+    render();
   }
 
   setInterval(() => {
-    if (state.running) {
-      state.elapsed++;
-      clockEl.innerHTML = formatClock();
-      // Buluta çok yük binmemesi için süreyi sadece her 5 saniyede bir veya duraklatıldığında senkronize et
-      if (state.elapsed % 5 === 0) pushToCloud();
-    }
+    if (running) { time++; render(); }
   }, 1000);
 
-  nameA.addEventListener('blur', () => { state.teamAName = nameA.textContent.trim() || 'EV SAHİBİ'; render(false); pushToCloud(); });
-  nameB.addEventListener('blur', () => { state.teamBName = nameB.textContent.trim() || 'DEPLASMAN'; render(false); pushToCloud(); });
-  nameA.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameA.blur(); } });
-  nameB.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameB.blur(); } });
-  competitionEl.addEventListener('blur', () => { state.competition = competitionEl.textContent.trim() || 'HALI SAHA LİGİ'; render(false); pushToCloud(); });
-  competitionEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); competitionEl.blur(); } });
-
-  colorA.addEventListener('input', () => { state.teamAColor = colorA.value; render(false); pushToCloud(); });
-  colorB.addEventListener('input', () => { state.teamBColor = colorB.value; render(false); pushToCloud(); });
-
-  $('plusA').addEventListener('click', () => incScore('A'));
-  $('minusA').addEventListener('click', () => decScore('A'));
-  $('plusB').addEventListener('click', () => incScore('B'));
-  $('minusB').addEventListener('click', () => decScore('B'));
-  startPauseBtn.addEventListener('click', toggleRunning);
-  $('resetClock').addEventListener('click', resetClock);
-  $('cycleHalf').addEventListener('click', cycleHalf);
-
   document.addEventListener('keydown', e => {
-    if (document.activeElement.isContentEditable) return;
-    switch (e.key.toLowerCase()) {
-      case 'q': incScore('A'); break;
-      case 'a': decScore('A'); break;
-      case 'p': incScore('B'); break;
-      case 'l': decScore('B'); break;
-      case ' ': e.preventDefault(); toggleRunning(); break;
-      case 'r': resetClock(); break;
-      case 'h': cycleHalf(); break;
-      case 'c': togglePanel(); break;
+    if (e.key.toLowerCase() === 'c') {
+      const ctrl = document.getElementById('controls');
+      ctrl.classList.toggle('visible');
     }
   });
 
-  render(false);
+  render();
 </script>
 </body>
 </html>
