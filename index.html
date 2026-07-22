@@ -6,8 +6,11 @@
 <title>Halısaha Skor Tabelası</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
-<!-- Kesintisiz Canlı Yayın Altyapısı (PubNub) -->
-<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+
+<!-- Firebase Modülleri -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <style>
   :root {
     --casing: #14120E;
@@ -283,16 +286,12 @@
   </div>
 
 <script>
-  // PubNub Canlı Yayın Motoru
-  const pubnub = new PubNub({
-    publishKey: "pub-c-49a37e59-39b0-4a87-a20c-c4ffc375eb0b",
-    subscribeKey: "sub-c-48be040d-d4a3-4857-9db6-e94aa7fb880b",
-    userId: "user-" + Math.floor(Math.random() * 10000)
-  });
-
-  const CHANNEL = "orimix_halisaha_channel";
-
-  pubnub.subscribe({ channels: [CHANNEL] });
+  // Ortak Canlı Veritabanı
+  const firebaseConfig = {
+    databaseURL: "https://halisaha-skor-default-rtdb.europe-west1.firebasedatabase.app"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database().ref("matchData");
 
   let state = {
     sa: 0, sb: 0,
@@ -320,51 +319,48 @@
     document.getElementById('lamp').classList.toggle('on', state.r);
   }
 
-  // Bilgisayardan Veriyi Anında Yayınla
-  function broadcast() {
+  // Veritabanına Yaz
+  function sync() {
     render();
-    pubnub.publish({
-      channel: CHANNEL,
-      message: state
-    });
+    if(document.getElementById('controls').classList.contains('visible')) {
+      db.set(state);
+    }
   }
 
-  // Telefonda / Yayında Veriyi Dinle ve Güncelle
-  pubnub.addListener({
-    message: function(event) {
-      if (event.message) {
-        state = event.message;
-        render();
-      }
+  // Veritabanından Oku (Anlık Canlı Dinleyici)
+  db.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      state = data;
+      render();
     }
   });
 
   function inc(team, val) {
     if (team === 'a') state.sa = Math.max(0, state.sa + val);
     if (team === 'b') state.sb = Math.max(0, state.sb + val);
-    broadcast();
+    sync();
   }
 
-  function toggleClock() { state.r = !state.r; broadcast(); }
+  function toggleClock() { state.r = !state.r; sync(); }
 
   function nextHalf() {
     if (state.h === '1. YARI') { state.h = '2. YARI'; state.t = 25 * 60; }
     else { state.h = '1. YARI'; state.t = 0; }
     state.r = false;
-    broadcast();
+    sync();
   }
 
   function resetAll() {
     state = { sa: 0, sb: 0, ta: 'EV SAHİBİ', tb: 'DEPLASMAN', t: 0, r: false, h: '1. YARI' };
-    broadcast();
+    sync();
   }
 
   // Bilgisayarda Süre İlerlemesi
   setInterval(() => {
     if (state.r && document.getElementById('controls').classList.contains('visible')) {
       state.t++;
-      render();
-      if (state.t % 2 === 0) broadcast();
+      sync();
     }
   }, 1000);
 
@@ -378,5 +374,3 @@
 </script>
 </body>
 </html>
-?v=100
-
