@@ -2,8 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Halı Saha Skor Tabelası — Retro Split-Flap</title>
+<title>Halısaha Skor Tabelası — Retro Split-Flap</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -17,704 +16,671 @@
     --lamp-red: #C24435;
     --paper: #F3EEE2;
     --muted: #8B8172;
-    --card-yellow: #FFD400;
-    --card-red: #E9302A;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:transparent;font-family:'Archivo Narrow',sans-serif;color:var(--paper);}
-
-  #broadcastWrap{width:700px;padding:20px;background:transparent;}
-
-  .board{
-    position:relative;
-    width:640px;
-    background:linear-gradient(160deg, var(--casing-2), var(--casing));
-    border-radius:8px;
-    padding:14px 24px 16px;
-    box-shadow:0 18px 44px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.05);
-  }
-  .rivet{position:absolute;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%, var(--brass-light), var(--brass) 60%, #6b4d20 100%);box-shadow:0 1px 2px rgba(0,0,0,.6);}
-  .rivet.tl{top:10px;left:10px;} .rivet.tr{top:10px;right:10px;}
-  .rivet.bl{bottom:10px;left:10px;} .rivet.br{bottom:10px;right:10px;}
-
-  .board-header{
-    display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
-    padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);
-  }
-  .lamp-unit{display:flex;align-items:center;gap:6px;flex:0 0 auto;padding-top:1px;}
-  .competition{
-    font-family:'Archivo Narrow',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;
-    color:var(--muted);text-transform:uppercase;text-align:right;line-height:1.35;
-    max-width:420px;
+    --team-a: #2FA84F;
+    --team-b: #3B7DDB;
   }
 
-  /* telegraph slot: goal / card announcements — never covers the clock */
-  .eventStrip{
-    height:22px;margin-bottom:10px;background:#1c1710;border:1px solid rgba(255,255,255,.06);border-radius:3px;
-    display:flex;align-items:center;justify-content:center;overflow:hidden;
-    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.4px;
-    color:var(--brass-light);opacity:.35;transition:opacity .3s ease,color .3s ease;
-    white-space:nowrap;text-overflow:ellipsis;
-  }
-  .eventStrip.show{opacity:1;}
+  * { box-sizing: border-box; }
 
-  .board-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-
-  .team{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
-  .team-b{flex-direction:row-reverse;}
-
-  .crest{
-    width:36px;height:36px;border-radius:50%;flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;
-    background:radial-gradient(circle at 32% 28%, #2b2620, #100e0a);
-    border:2px solid var(--brass);
-    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.5px;color:var(--paper);
+  html, body {
+    margin: 0; padding: 0;
+    background: transparent; /* Yayın için şeffaf arka plan */
+    font-family: 'Archivo Narrow', sans-serif;
+    color: var(--paper);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 
-  .name-wrap{min-width:0;display:flex;flex-direction:column;}
-  .team-b .name-wrap{align-items:flex-end;}
-  .name{
-    font-family:'Archivo Narrow',sans-serif;font-weight:700;font-size:19px;letter-spacing:1px;
-    text-transform:uppercase;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--paper);
+  body.preview-checker {
+    background-image:
+      linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+      linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+      linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
+    background-size: 24px 24px;
+    background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+    background-color: #1a1a1a;
   }
-  .name-sub{font-size:9.5px;letter-spacing:1.5px;color:var(--muted);margin-top:1px;}
 
-  .tile-group{display:flex;gap:3px;flex-shrink:0;}
-  .flap-tile{position:relative;width:32px;height:46px;perspective:220px;border-radius:3px;box-shadow:0 2px 5px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.4);}
-  .flap-tile::after{content:'';position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(0,0,0,.4);transform:translateY(-1px);z-index:5;pointer-events:none;}
-  .flap-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateX(0deg);}
-  .flap-inner.flip{animation:flapRotate .45s ease-in-out;}
-  @keyframes flapRotate{
-    0%{transform:rotateX(0deg);filter:brightness(1);}
-    45%{filter:brightness(.65);}
-    50%{transform:rotateX(-90deg);filter:brightness(.5);}
-    55%{filter:brightness(.65);}
-    100%{transform:rotateX(-180deg);filter:brightness(1);}
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px;
+    width: 100%;
+    height: 100%;
   }
-  .flap-front,.flap-back{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    background:var(--tile);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:23px;
-    border-radius:3px;backface-visibility:hidden;
+
+  /* ---------- Board ---------- */
+  .board {
+    position: relative;
+    width: 580px;
+    background: linear-gradient(160deg, var(--casing-2), var(--casing));
+    border-radius: 8px;
+    padding: 14px 24px 16px;
+    box-shadow: 0 18px 44px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.05);
+    z-index: 1;
   }
-  .flap-back{transform:rotateX(180deg);}
 
-  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;padding:0 8px;}
-  .lamp{width:9px;height:9px;border-radius:50%;background:#3a1512;border:1.5px solid var(--brass);box-shadow:inset 0 0 3px rgba(0,0,0,.6);transition:background .3s ease;}
-  .lamp.on{background:var(--lamp-red);box-shadow:0 0 8px 2px rgba(194,68,53,.75), inset 0 0 3px rgba(0,0,0,.3);animation:flicker 2.6s infinite;}
-  @keyframes flicker{0%,100%{opacity:1;}92%{opacity:1;}94%{opacity:.55;}96%{opacity:1;}}
-  .lampLabel{font-weight:700;font-size:10px;letter-spacing:1.5px;color:var(--brass-light);text-transform:uppercase;}
-
-  .clock-window{
-    background:var(--tile);color:var(--ink);border-radius:3px;padding:6px 14px;
-    box-shadow:0 2px 5px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.4), inset 0 0 10px rgba(0,0,0,.08);
+  .rivet {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--brass-light), var(--brass) 60%, #6b4d20 100%);
+    box-shadow: 0 1px 2px rgba(0,0,0,.6);
   }
-  .clock{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:21px;letter-spacing:1px;font-variant-numeric:tabular-nums;}
-  .clock .colon{animation:blink 1s steps(1) infinite;}
-  @keyframes blink{50%{opacity:.15;}}
-  .stoppage{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:var(--brass);text-align:center;margin-top:1px;}
-  .half-label{font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:var(--brass-light);margin-top:6px;text-transform:uppercase;white-space:nowrap;}
+  .rivet.tl { top: 10px; left: 10px; }
+  .rivet.tr { top: 10px; right: 10px; }
+  .rivet.bl { bottom: 10px; left: 10px; }
+  .rivet.br { bottom: 10px; right: 10px; }
 
-  /* scorer ticker */
-  .tickerRow{
-    margin-top:12px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.1);
-    display:flex;font-family:'IBM Plex Mono',monospace;font-size:11px;min-height:14px;
+  /* ---------- Header row ---------- */
+  .board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
   }
-  .tickerHalf{flex:1;display:flex;flex-wrap:wrap;gap:8px;overflow:hidden;}
-  .tickerHalf.left{justify-content:flex-start;}
-  .tickerHalf.right{justify-content:flex-end;border-left:1px dashed rgba(255,255,255,.1);padding-left:10px;}
-  .tickEntry{color:var(--paper);opacity:.85;}
-  .tickEntry .m{color:var(--brass-light);margin-right:3px;}
 
-  /* ---- control panel (always visible below the board — crop this out in OBS) ---- */
-  #controls{width:660px;background:var(--casing);padding:22px 24px 30px;font-family:'Archivo Narrow',sans-serif;}
-  #controls h1{font-size:20px;letter-spacing:1px;color:var(--brass-light);margin:0 0 4px;text-transform:uppercase;}
-  #controls .hint{font-size:12.5px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
-  #controls .hint b{color:var(--paper);}
-
-  .panelGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .card{background:var(--casing-2);border-left:3px solid var(--brass);border-radius:4px;padding:14px 16px;}
-  .card h2{font-size:16px;letter-spacing:1px;text-transform:uppercase;color:var(--paper);margin:0 0 10px;}
-  .card h3{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:12px 0 6px;}
-
-  .row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-  .row:last-child{margin-bottom:0;}
-  .row label{font-size:12px;color:var(--muted);width:56px;flex:0 0 auto;}
-  .row input[type="text"], .row input[type="number"]{
-    background:#1c1710;border:1px solid #3a3123;color:var(--paper);padding:6px 8px;border-radius:4px;
-    font-family:'Archivo Narrow',sans-serif;font-size:13px;width:100%;
+  .lamp-unit { display: flex; align-items: center; gap: 7px; }
+  .lamp {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: #3a1512;
+    border: 1.5px solid var(--brass);
+    box-shadow: inset 0 0 3px rgba(0,0,0,.6);
+    transition: background .3s ease, box-shadow .3s ease;
   }
-  .row input[type="color"]{width:34px;height:28px;border:none;border-radius:4px;background:none;padding:0;cursor:pointer;}
-  .scoreControls{display:flex;align-items:center;gap:8px;margin-left:auto;}
-  .scoreControls .val{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;min-width:24px;text-align:center;}
+  .lamp.on {
+    background: var(--lamp-red);
+    box-shadow: 0 0 8px 2px rgba(194,68,53,.75), inset 0 0 3px rgba(0,0,0,.3);
+    animation: flicker 2.6s infinite;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    94% { opacity: .55; }
+    96% { opacity: 1; }
+  }
+  .lamp-label {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--brass-light);
+    text-transform: uppercase;
+  }
 
-  button{font-family:'Archivo Narrow',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:4px;padding:8px 12px;cursor:pointer;}
-  button:active{transform:translateY(1px);}
-  .btn-brass{background:var(--brass);color:#20160a;}
-  .btn-brass:hover{background:var(--brass-light);}
-  .btn-secondary{background:#1c1710;color:var(--paper);border:1px solid #3a3123;}
-  .btn-secondary:hover{background:#291f14;}
-  .btn-danger{background:transparent;color:#e08e83;border:1px solid #5a2622;}
-  .btn-danger:hover{background:rgba(230,51,41,.12);}
-  .btn-yellow{background:var(--card-yellow);color:#20160a;}
-  .btn-red{background:var(--card-red);color:var(--paper);}
-  .btn-outline{background:transparent;color:var(--muted);border:1px solid #3a3123;font-size:11px;padding:6px 9px;}
-  .btn-outline:hover{color:var(--paper);border-color:var(--brass);}
-  .btnGroup{display:flex;flex-wrap:wrap;gap:8px;}
-  .spanFull{grid-column:1 / -1;}
-  .miniNote{font-size:11px;color:var(--muted);margin-top:6px;}
+  .competition {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    outline: none;
+    cursor: text;
+    max-width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .competition:focus { color: var(--brass-light); }
 
-  .rosterRow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #2a2318;font-size:12.5px;}
-  .rosterRow:last-child{border-bottom:none;}
-  .rNum{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--brass-light);width:24px;flex:0 0 auto;}
-  .rName{flex:1;color:var(--paper);}
-  .rDel{background:transparent;border:none;color:#e08e83;font-size:15px;padding:0 6px;cursor:pointer;line-height:1;}
+  /* ---------- Main row ---------- */
+  .board-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
 
-  .goalChip{background:#1c1710;color:var(--paper);border:1px solid #3a3123;font-size:11.5px;padding:6px 9px;border-radius:14px;}
-  .goalChip:hover{border-color:var(--brass);color:var(--brass-light);}
+  .team {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+  .team-b { flex-direction: row-reverse; }
 
-  .checkRow{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);}
-  .checkRow input{width:14px;height:14px;}
+  .crest {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 32% 28%, #2b2620, #100e0a);
+    border: 2px solid var(--brass);
+    box-shadow: 0 0 0 2px var(--team-a) inset;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: .5px;
+    color: var(--paper);
+  }
+  .team-b .crest { box-shadow: 0 0 0 2px var(--team-b) inset; }
+
+  .name-wrap { min-width: 0; display: flex; flex-direction: column; }
+  .team-b .name-wrap { align-items: flex-end; }
+  .name {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    outline: none;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: text;
+    color: var(--paper);
+  }
+  .name:focus { color: var(--brass-light); }
+  .name-sub {
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* ---------- Flap tiles ---------- */
+  .tile-group { display: flex; gap: 3px; flex-shrink: 0; }
+
+  .flap-tile {
+    position: relative;
+    width: 30px; height: 42px;
+    perspective: 220px;
+    border-radius: 3px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.4);
+  }
+  .flap-tile::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    height: 2px;
+    background: rgba(0,0,0,.4);
+    transform: translateY(-1px);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .flap-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg);
+  }
+  .flap-inner.flip { animation: flapRotate .45s ease-in-out; }
+  @keyframes flapRotate {
+    0%   { transform: rotateX(0deg);    filter: brightness(1); }
+    45%  { filter: brightness(.65); }
+    50%  { transform: rotateX(-90deg);  filter: brightness(.5); }
+    55%  { filter: brightness(.65); }
+    100% { transform: rotateX(-180deg); filter: brightness(1); }
+  }
+  .flap-front, .flap-back {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--tile);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 22px;
+    border-radius: 3px;
+    backface-visibility: hidden;
+  }
+  .flap-back { transform: rotateX(180deg); }
+
+  /* ---------- Clock window ---------- */
+  .center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 6px;
+  }
+  .clock-window {
+    background: var(--tile);
+    color: var(--ink);
+    border-radius: 3px;
+    padding: 6px 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.4), inset 0 0 10px rgba(0,0,0,.08);
+    display: flex;
+    align-items: baseline;
+  }
+  .clock {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .clock .colon { animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: .15; } }
+
+  .half-label {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--brass-light);
+    margin-top: 6px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ---------- Hint + Control Panel Overlay ---------- */
+  .gear-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+    letter-spacing: .3px;
+    opacity: 0; /* Yayın ekranında kirlilik yapmaması için varsayılan gizli */
+    transition: opacity .2s ease;
+    text-align: center;
+  }
+  .stage:hover .gear-hint { opacity: .7; } /* Fare gelince görünür */
+
+  .gear-hint kbd {
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  /* Panel artık akış dışına alıntılandı (fixed) - tabelanın boyutunu asla bozmaz */
+  #controls {
+    display: none;
+    position: fixed;
+    top: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--casing);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 14px 16px;
+    width: 580px;
+    font-size: 13px;
+    font-family: 'Archivo Narrow', sans-serif;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    z-index: 999;
+  }
+  #controls.visible { display: block; }
+
+  .ctrl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .ctrl-row:last-child { margin-bottom: 0; }
+  .ctrl-group { display: flex; align-items: center; gap: 8px; }
+  .ctrl-label { color: var(--muted); min-width: 90px; font-size: 12.5px; }
+
+  button.btn {
+    background: var(--casing-2);
+    color: var(--paper);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.btn:hover { background: #322b20; }
+  button.btn.brass { border-color: var(--brass); color: var(--brass-light); }
+  button.btn.wide { padding: 5px 16px; }
+
+  input[type="color"] {
+    width: 28px; height: 24px; border: none; border-radius: 4px; background: none; cursor: pointer; padding: 0;
+  }
+
+  .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 0; }
+
+  .shortcuts { color: var(--muted); font-size: 11px; line-height: 1.6; }
+  .shortcuts b { color: var(--paper); }
+
+  .checker-toggle { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<div id="broadcastWrap">
-  <div class="board" id="scorebug">
-    <span class="rivet tl"></span><span class="rivet tr"></span>
-    <span class="rivet bl"></span><span class="rivet br"></span>
+  <div class="stage">
 
-    <div class="board-header">
-      <div class="lamp-unit"><span class="lamp" id="lamp"></span><span class="lampLabel">Canlı</span></div>
-      <div class="competition" id="competition">KOCAELİ ŞEHİR HASTANESİ ÇALIŞANLARI FUTBOL LİGİ</div>
+    <div class="board" id="scorebug">
+      <span class="rivet tl"></span><span class="rivet tr"></span>
+      <span class="rivet bl"></span><span class="rivet br"></span>
+
+      <div class="board-header">
+        <div class="lamp-unit">
+          <span class="lamp" id="lamp"></span>
+          <span class="lamp-label">Canlı</span>
+        </div>
+        <div class="competition" id="competition" contenteditable="true" spellcheck="false">HALI SAHA LİGİ</div>
+      </div>
+
+      <div class="board-main">
+        <div class="team team-a">
+          <div class="crest" id="crestA">TA</div>
+          <div class="name-wrap">
+            <div class="name" id="nameA" contenteditable="true" spellcheck="false">EV SAHİBİ</div>
+            <div class="name-sub">EV SAHİBİ</div>
+          </div>
+          <div class="tile-group">
+            <div class="flap-tile"><div class="flap-inner" id="tileA10"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+            <div class="flap-tile"><div class="flap-inner" id="tileA1"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+          </div>
+        </div>
+
+        <div class="center">
+          <div class="clock-window">
+            <div class="clock" id="clock">00<span class="colon">:</span>00</div>
+          </div>
+          <div class="half-label" id="halfLabel">1. YARI</div>
+        </div>
+
+        <div class="team team-b">
+          <div class="crest" id="crestB">TB</div>
+          <div class="name-wrap">
+            <div class="name" id="nameB" contenteditable="true" spellcheck="false">DEPLASMAN</div>
+            <div class="name-sub">DEPLASMAN</div>
+          </div>
+          <div class="tile-group">
+            <div class="flap-tile"><div class="flap-inner" id="tileB10"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+            <div class="flap-tile"><div class="flap-inner" id="tileB1"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="eventStrip" id="eventStrip">—</div>
+    <div class="gear-hint">Kontrol paneli: <kbd>C</kbd></div>
 
-    <div class="board-main">
-      <div class="team team-a">
-        <div class="crest" id="crestA">TA</div>
-        <div class="name-wrap">
-          <div class="name" id="nameA">TAKIM A</div>
-          <div class="name-sub">EV SAHİBİ</div>
+    <div id="controls">
+      <div class="ctrl-row">
+        <div class="ctrl-group">
+          <span class="ctrl-label">Takım A rengi</span>
+          <input type="color" id="colorA" value="#2FA84F">
         </div>
-        <div class="tile-group">
-          <div class="flap-tile"><div class="flap-inner" id="tileA10"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
-          <div class="flap-tile"><div class="flap-inner" id="tileA1"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">Takım B rengi</span>
+          <input type="color" id="colorB" value="#3B7DDB">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="ctrl-row">
+        <div class="ctrl-group">
+          <span class="ctrl-label">Takım A skor</span>
+          <button class="btn" id="minusA">−</button>
+          <button class="btn" id="plusA">+</button>
+        </div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">Takım B skor</span>
+          <button class="btn" id="minusB">−</button>
+          <button class="btn" id="plusB">+</button>
         </div>
       </div>
 
-      <div class="center">
-        <div class="clock-window"><div class="clock" id="clock">00<span class="colon">:</span>00</div></div>
-        <div class="stoppage" id="stoppage" style="visibility:hidden;">+0:00</div>
-        <div class="half-label" id="halfLabel">BAŞLAMADI</div>
-      </div>
+      <div class="divider"></div>
 
-      <div class="team team-b">
-        <div class="crest" id="crestB">TB</div>
-        <div class="name-wrap">
-          <div class="name" id="nameB">TAKIM B</div>
-          <div class="name-sub">DEPLASMAN</div>
+      <div class="ctrl-row">
+        <div class="ctrl-group">
+          <button class="btn brass wide" id="startPause">Başlat</button>
+          <button class="btn" id="resetClock">Sıfırla</button>
         </div>
-        <div class="tile-group">
-          <div class="flap-tile"><div class="flap-inner" id="tileB10"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
-          <div class="flap-tile"><div class="flap-inner" id="tileB1"><div class="flap-front">0</div><div class="flap-back">0</div></div></div>
+        <div class="ctrl-group">
+          <button class="btn" id="cycleHalf">Devre değiştir</button>
         </div>
       </div>
-    </div>
 
-    <div class="tickerRow">
-      <div class="tickerHalf left" id="tickerA"></div>
-      <div class="tickerHalf right" id="tickerB"></div>
+      <div class="divider"></div>
+
+      <div class="ctrl-row">
+        <label class="checker-toggle">
+          <input type="checkbox" id="checkerToggle"> Arka plan şeffaflığını test et
+        </label>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="shortcuts">
+        <b>Kısayollar:</b> Takım A: <b>Q</b> (+1) / <b>A</b> (-1) &nbsp;|&nbsp;
+        Takım B: <b>P</b> (+1) / <b>L</b> (-1) &nbsp;|&nbsp;
+        <b>Boşluk:</b> Başlat/Duraklat &nbsp;|&nbsp;
+        <b>R:</b> Sıfırla &nbsp;|&nbsp;
+        <b>H:</b> Devre Değiştir &nbsp;|&nbsp;
+        <b>C:</b> Paneli Gizle/Göster
+      </div>
     </div>
   </div>
-</div>
-
-<div id="controls">
-  <h1>Skor Tabelası — Kontrol Paneli</h1>
-  <p class="hint">Bu paneli OBS yakalamaz. OBS'de <b>Browser Source</b> ekleyip bu dosyayı seçin; kaynağı panonun boyutuna göre kırpın.</p>
-
-  <div class="panelGrid">
-    <div class="card spanFull">
-      <h2>Turnuva / Lig Adı</h2>
-      <div class="row"><input type="text" id="inputCompetition" value="KOCAELİ ŞEHİR HASTANESİ ÇALIŞANLARI FUTBOL LİGİ" maxlength="80"></div>
-    </div>
-
-    <div class="card">
-      <h2>Takım A</h2>
-      <div class="row"><label>İsim</label><input type="text" id="inputNameA" value="TAKIM A" maxlength="20"></div>
-      <div class="row">
-        <label>Renk</label><input type="color" id="inputColorA" value="#2FA84F">
-        <div class="scoreControls">
-          <button class="btn-secondary" data-team="A" data-delta="-1">−</button>
-          <span class="val" id="valScoreA">0</span>
-          <span style="font-size:11px;color:var(--muted);">(elle skor)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Takım B</h2>
-      <div class="row"><label>İsim</label><input type="text" id="inputNameB" value="TAKIM B" maxlength="20"></div>
-      <div class="row">
-        <label>Renk</label><input type="color" id="inputColorB" value="#3B7DDB">
-        <div class="scoreControls">
-          <button class="btn-secondary" data-team="B" data-delta="-1">−</button>
-          <span class="val" id="valScoreB">0</span>
-          <span style="font-size:11px;color:var(--muted);">(elle skor)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Takım A — Kadro</h2>
-      <div class="row">
-        <input type="number" id="newPlayerNumA" placeholder="No" style="width:56px;flex:0 0 auto;">
-        <input type="text" id="newPlayerNameA" placeholder="Ad Soyad">
-        <button class="btn-brass" id="addPlayerA" style="flex:0 0 auto;">Ekle</button>
-      </div>
-      <div id="rosterListA"></div>
-    </div>
-
-    <div class="card">
-      <h2>Takım B — Kadro</h2>
-      <div class="row">
-        <input type="number" id="newPlayerNumB" placeholder="No" style="width:56px;flex:0 0 auto;">
-        <input type="text" id="newPlayerNameB" placeholder="Ad Soyad">
-        <button class="btn-brass" id="addPlayerB" style="flex:0 0 auto;">Ekle</button>
-      </div>
-      <div id="rosterListB"></div>
-    </div>
-
-    <div class="card">
-      <h2>Takım A — Gol</h2>
-      <h3>Kadrodan tek tık</h3>
-      <div class="btnGroup" id="goalChipsA"></div>
-      <h3>Elle giriş</h3>
-      <div class="row">
-        <input type="number" id="goalNumA" placeholder="No" style="width:56px;flex:0 0 auto;">
-        <input type="text" id="goalNameA" placeholder="Ad Soyad (otomatik gelir)">
-      </div>
-      <div class="row">
-        <label class="checkRow"><input type="checkbox" id="goalOwnA"> Kendi kalesine</label>
-        <div style="margin-left:auto;display:flex;gap:8px;">
-          <button class="btn-outline" id="btnGoalUndoA">Son Golü Sil</button>
-          <button class="btn-brass" id="btnGoalAddA">⚽ Gol Ekle</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Takım B — Gol</h2>
-      <h3>Kadrodan tek tık</h3>
-      <div class="btnGroup" id="goalChipsB"></div>
-      <h3>Elle giriş</h3>
-      <div class="row">
-        <input type="number" id="goalNumB" placeholder="No" style="width:56px;flex:0 0 auto;">
-        <input type="text" id="goalNameB" placeholder="Ad Soyad (otomatik gelir)">
-      </div>
-      <div class="row">
-        <label class="checkRow"><input type="checkbox" id="goalOwnB"> Kendi kalesine</label>
-        <div style="margin-left:auto;display:flex;gap:8px;">
-          <button class="btn-outline" id="btnGoalUndoB">Son Golü Sil</button>
-          <button class="btn-brass" id="btnGoalAddB">⚽ Gol Ekle</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Takım A — Kart</h2>
-      <p class="miniNote">Kart verildiğinde panoda sadece birkaç saniyeliğine anons görünür, kalıcı rozet göstermez.</p>
-      <div class="row"><label>Forma No</label><input type="number" id="cardNumA" placeholder="opsiyonel" style="width:80px;"></div>
-      <div class="row btnGroup">
-        <button class="btn-yellow" data-team="A" data-card="yellow">Sarı Kart Ver</button>
-        <button class="btn-red" data-team="A" data-card="red">Kırmızı Kart Ver</button>
-      </div>
-      <p class="miniNote">Bu maçta: <span id="countYA">0</span> sarı · <span id="countRA">0</span> kırmızı</p>
-    </div>
-
-    <div class="card">
-      <h2>Takım B — Kart</h2>
-      <p class="miniNote">Kart verildiğinde panoda sadece birkaç saniyeliğine anons görünür, kalıcı rozet göstermez.</p>
-      <div class="row"><label>Forma No</label><input type="number" id="cardNumB" placeholder="opsiyonel" style="width:80px;"></div>
-      <div class="row btnGroup">
-        <button class="btn-yellow" data-team="B" data-card="yellow">Sarı Kart Ver</button>
-        <button class="btn-red" data-team="B" data-card="red">Kırmızı Kart Ver</button>
-      </div>
-      <p class="miniNote">Bu maçta: <span id="countYB">0</span> sarı · <span id="countRB">0</span> kırmızı</p>
-    </div>
-
-    <div class="card spanFull">
-      <h2>Süre</h2>
-      <div class="row">
-        <label>Devre</label>
-        <input type="number" id="inputHalfLength" value="25" min="1" max="90" style="width:70px;">
-        <span style="font-size:12.5px;color:var(--muted);">dakika üzerinden — bittiğinde saat otomatik "+" ile devam eder (uzatma)</span>
-      </div>
-      <div class="row btnGroup">
-        <button class="btn-brass" id="btnStartPause">Süreyi Başlat</button>
-        <button class="btn-secondary" id="btnMinus1">−1 dk</button>
-        <button class="btn-secondary" id="btnPlus1">+1 dk</button>
-        <button class="btn-secondary" id="btnHalfTime">Devreyi Bitir</button>
-        <button class="btn-secondary" id="btnStartSecond">2. Yarıyı Başlat</button>
-        <button class="btn-secondary" id="btnFullTime">Maçı Bitir</button>
-        <button class="btn-danger" id="btnFullReset">Maçı Sıfırla</button>
-      </div>
-      <p class="miniNote">"−1 dk / +1 dk" saat durdurulmuşken küçük düzeltmeler yapmak içindir. "Maçı Sıfırla" skoru, kartları, gol listesini ve süreyi sıfırlar — kadrolar korunur.</p>
-    </div>
-  </div>
-</div>
 
 <script>
-(function(){
-  "use strict";
+  const STORAGE_KEY = 'skorTabelasiState_retro_v4';
 
-  var state = {
-    teamA:{name:"TAKIM A", color:"#2FA84F", score:0, yellow:0, red:0, roster:[], scorers:[]},
-    teamB:{name:"TAKIM B", color:"#3B7DDB", score:0, yellow:0, red:0, roster:[], scorers:[]},
-    competition:"KOCAELİ ŞEHİR HASTANESİ ÇALIŞANLARI FUTBOL LİGİ",
-    halfLengthSec: 25*60,
-    phase:"pre",
-    running:false,
-    elapsedAtStart:0,
-    startTimestamp:null
+  let state = {
+    teamAName: 'EV SAHİBİ', teamBName: 'DEPLASMAN',
+    teamAColor: '#2FA84F', teamBColor: '#3B7DDB',
+    competition: 'HALI SAHA LİGİ',
+    scoreA: 0, scoreB: 0,
+    half: 1, 
+    elapsed: 0,
+    running: false,
+    panelVisible: false
   };
 
-  var eventTimeout = null;
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) { try { Object.assign(state, JSON.parse(saved)); } catch(e) {} }
 
-  function $(id){ return document.getElementById(id); }
-  function pad(n){ n = Math.floor(n); return (n < 10 ? "0" : "") + n; }
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, function(c){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
-    });
+  const $ = id => document.getElementById(id);
+  const nameA = $('nameA'), nameB = $('nameB');
+  const crestA = $('crestA'), crestB = $('crestB');
+  const colorA = $('colorA'), colorB = $('colorB');
+  const clockEl = $('clock'), halfLabelEl = $('halfLabel'), lamp = $('lamp');
+  const competitionEl = $('competition');
+  const controls = $('controls');
+  const startPauseBtn = $('startPause');
+  const checkerToggle = $('checkerToggle');
+
+  const tileA10 = $('tileA10'), tileA1 = $('tileA1');
+  const tileB10 = $('tileB10'), tileB1 = $('tileB1');
+
+  function initials(name) {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    if (words.length > 1) return words.map(w => w[0].toUpperCase()).slice(0,3).join('');
+    return (name.trim().slice(0,3) || '??').toUpperCase();
   }
 
-  function initials(name){
-    var words = name.trim().split(/\s+/).filter(Boolean);
-    if(words.length > 1) return words.map(function(w){ return w[0].toUpperCase(); }).slice(0,3).join("");
-    return (name.trim().slice(0,3) || "??").toUpperCase();
-  }
-
-  function broadcastName(full){
-    if(!full) return "";
-    var parts = String(full).trim().split(/\s+/).filter(Boolean);
-    if(parts.length === 0) return "";
-    if(parts.length === 1) return parts[0].toUpperCase();
-    return parts[0].charAt(0).toUpperCase() + ". " + parts[parts.length-1].toUpperCase();
-  }
-
-  function setTile(tileInner, value){
-    var front = tileInner.querySelector(".flap-front");
-    var back = tileInner.querySelector(".flap-back");
-    var val = String(value);
-    if(front.textContent === val) return;
+  function setTile(tileInner, value, animate) {
+    const front = tileInner.querySelector('.flap-front');
+    const back = tileInner.querySelector('.flap-back');
+    const val = String(value);
+    if (front.textContent === val) return;
     back.textContent = val;
-    tileInner.classList.remove("flip");
-    void tileInner.offsetWidth;
-    tileInner.classList.add("flip");
-    tileInner.addEventListener("animationend", function handler(){
-      tileInner.classList.remove("flip");
+    if (!animate) {
       front.textContent = val;
-      tileInner.removeEventListener("animationend", handler);
-    }, { once:true });
-  }
-
-  function renderScoreTiles(){
-    setTile($("tileA10"), Math.floor(state.teamA.score / 10));
-    setTile($("tileA1"), state.teamA.score % 10);
-    setTile($("tileB10"), Math.floor(state.teamB.score / 10));
-    setTile($("tileB1"), state.teamB.score % 10);
-  }
-
-  function getElapsedSeconds(){
-    if(state.running && state.startTimestamp !== null){
-      return state.elapsedAtStart + (Date.now() - state.startTimestamp)/1000;
+      tileInner.classList.remove('flip');
+      return;
     }
-    return state.elapsedAtStart;
+    tileInner.classList.remove('flip');
+    void tileInner.offsetWidth;
+    tileInner.classList.add('flip');
+    tileInner.addEventListener('animationend', function handler() {
+      tileInner.classList.remove('flip');
+      front.textContent = val;
+      tileInner.removeEventListener('animationend', handler);
+    }, { once: true });
   }
 
-  function computeMinuteLabel(){
-    var half = state.halfLengthSec;
-    var halfMin = Math.max(1, Math.round(half/60));
-    var elapsed = getElapsedSeconds();
-    if(state.phase === "second"){
-      if(elapsed <= half){ return (halfMin + Math.max(1, Math.ceil(elapsed/60))) + "'"; }
-      var extra = elapsed - half;
-      return (halfMin*2) + "+" + Math.ceil(extra/60) + "'";
+  function renderScoreTiles(animate) {
+    setTile(tileA10, Math.floor(state.scoreA / 10), animate);
+    setTile(tileA1, state.scoreA % 10, animate);
+    setTile(tileB10, Math.floor(state.scoreB / 10), animate);
+    setTile(tileB1, state.scoreB % 10, animate);
+  }
+
+  function formatClock() {
+    const totalSec = state.elapsed;
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+
+    if (state.half === 1) {
+      if (totalSec < 25 * 60) {
+        return `${pad(m)}<span class="colon">:</span>${pad(s)}`;
+      } else {
+        const extraSec = totalSec - 25 * 60;
+        const extraM = Math.floor(extraSec / 60) + 1;
+        const extraS = extraSec % 60;
+        return `25+${extraM}<span class="colon">:</span>${pad(extraS)}`;
+      }
+    } 
+    else if (state.half === 2) {
+      if (totalSec < 50 * 60) {
+        return `${pad(m)}<span class="colon">:</span>${pad(s)}`;
+      } else {
+        const extraSec = totalSec - 50 * 60;
+        const extraM = Math.floor(extraSec / 60) + 1;
+        const extraS = extraSec % 60;
+        return `50+${extraM}<span class="colon">:</span>${pad(extraS)}`;
+      }
+    } 
+    else {
+      return `${pad(m)}<span class="colon">:</span>${pad(s)}`;
     }
-    if(elapsed <= half){ return Math.max(1, Math.ceil(elapsed/60)) + "'"; }
-    var extra2 = elapsed - half;
-    return halfMin + "+" + Math.ceil(extra2/60) + "'";
   }
 
-  function findPlayer(teamKey, number){
-    if(number === undefined || number === null || String(number).trim() === "") return null;
-    var found = state[teamKey].roster.filter(function(p){ return String(p.number) === String(number).trim(); });
-    return found.length ? found[0] : null;
+  function render(animateScore) {
+    nameA.textContent = state.teamAName;
+    nameB.textContent = state.teamBName;
+    competitionEl.textContent = state.competition;
+    crestA.style.boxShadow = `0 0 0 2px ${state.teamAColor} inset`;
+    crestB.style.boxShadow = `0 0 0 2px ${state.teamBColor} inset`;
+    crestA.textContent = initials(state.teamAName);
+    crestB.textContent = initials(state.teamBName);
+    colorA.value = state.teamAColor;
+    colorB.value = state.teamBColor;
+    renderScoreTiles(animateScore);
+    clockEl.innerHTML = formatClock();
+    halfLabelEl.textContent = halfLabelText();
+    lamp.classList.toggle('on', state.running);
+    startPauseBtn.textContent = state.running ? 'Duraklat' : 'Başlat';
+    controls.classList.toggle('visible', state.panelVisible);
   }
 
-  function showEvent(text, colorHex, durationMs){
-    var el = $("eventStrip");
-    el.textContent = text;
-    el.style.color = colorHex || "var(--brass-light)";
-    el.classList.add("show");
-    if(eventTimeout) clearTimeout(eventTimeout);
-    eventTimeout = setTimeout(function(){
-      el.classList.remove("show");
-      el.style.color = "";
-      el.textContent = "—";
-    }, durationMs || 4200);
-  }
-
-  function renderTicker(teamKey, elId){
-    var arr = state[teamKey].scorers;
-    var html = arr.map(function(g){
-      var nm = broadcastName(g.name);
-      var tag = g.ownGoal ? " (K.K.)" : "";
-      return '<span class="tickEntry"><span class="m">' + escapeHtml(g.label) + "</span>" + escapeHtml(nm) + escapeHtml(tag) + "</span>";
-    }).join("");
-    $(elId).innerHTML = html;
-  }
-
-  function renderRoster(teamKey, listElId, chipsElId){
-    var roster = state[teamKey].roster;
-
-    var listHtml = roster.map(function(p, idx){
-      return '<div class="rosterRow"><span class="rNum">' + escapeHtml(p.number) + '</span><span class="rName">' + escapeHtml(p.name) +
-        '</span><button type="button" class="rDel" data-team="' + teamKey + '" data-idx="' + idx + '">×</button></div>';
-    }).join("") || '<div class="miniNote">Henüz oyuncu eklenmedi.</div>';
-    $(listElId).innerHTML = listHtml;
-
-    var chipsHtml = roster.map(function(p){
-      return '<button type="button" class="goalChip" data-team="' + teamKey + '" data-num="' + escapeHtml(p.number) + '" data-name="' + escapeHtml(p.name) + '">⚽ ' + escapeHtml(p.number) + ' · ' + escapeHtml(p.name) + '</button>';
-    }).join("") || '<span class="miniNote">Kadro ekleyince oyuncuya tek tıkla gol yazabilirsin.</span>';
-    $(chipsElId).innerHTML = chipsHtml;
-
-    $(listElId).querySelectorAll(".rDel").forEach(function(btn){
-      btn.addEventListener("click", function(){
-        var tk = btn.getAttribute("data-team");
-        var idx = parseInt(btn.getAttribute("data-idx"), 10);
-        state[tk].roster.splice(idx, 1);
-        renderRoster(tk, tk === "teamA" ? "rosterListA" : "rosterListB", tk === "teamA" ? "goalChipsA" : "goalChipsB");
-      });
-    });
-    $(chipsElId).querySelectorAll(".goalChip").forEach(function(btn){
-      btn.addEventListener("click", function(){
-        registerGoal(btn.getAttribute("data-team"), btn.getAttribute("data-num"), btn.getAttribute("data-name"), false);
-      });
-    });
-  }
-
-  function phaseLabel(){
-    switch(state.phase){
-      case "pre": return "BAŞLAMADI";
-      case "first": return "1. YARI";
-      case "ht": return "DEVRE ARASI";
-      case "second": return "2. YARI";
-      case "ft": return "MAÇ SONU";
+  function halfLabelText() {
+    switch (state.half) {
+      case 1: return '1. YARI';
+      case 'HT': return 'DEVRE ARASI';
+      case 2: return '2. YARI';
+      case 'FT': return 'MAÇ SONU';
     }
-    return "";
   }
 
-  function render(){
-    $("competition").textContent = state.competition;
-    $("nameA").textContent = state.teamA.name;
-    $("nameB").textContent = state.teamB.name;
-    $("crestA").textContent = initials(state.teamA.name);
-    $("crestB").textContent = initials(state.teamB.name);
-    $("crestA").style.boxShadow = "0 0 0 2px " + state.teamA.color + " inset";
-    $("crestB").style.boxShadow = "0 0 0 2px " + state.teamB.color + " inset";
-    $("valScoreA").textContent = state.teamA.score;
-    $("valScoreB").textContent = state.teamB.score;
-    $("countYA").textContent = state.teamA.yellow;
-    $("countRA").textContent = state.teamA.red;
-    $("countYB").textContent = state.teamB.yellow;
-    $("countRB").textContent = state.teamB.red;
-    renderScoreTiles();
-    renderTicker("teamA", "tickerA");
-    renderTicker("teamB", "tickerB");
-
-    var elapsed = getElapsedSeconds();
-    var base = Math.min(elapsed, state.halfLengthSec);
-    var extra = Math.max(0, elapsed - state.halfLengthSec);
-    var m = Math.floor(base/60), s = Math.floor(base%60);
-    $("clock").innerHTML = pad(m) + '<span class="colon">:</span>' + pad(s);
-
-    if(extra > 0.4){
-      var em = Math.floor(extra/60), es = Math.floor(extra%60);
-      $("stoppage").textContent = "+" + pad(em) + ":" + pad(es);
-      $("stoppage").style.visibility = "visible";
-    } else {
-      $("stoppage").style.visibility = "hidden";
-    }
-
-    $("halfLabel").textContent = phaseLabel();
-    $("lamp").classList.toggle("on", state.running);
-    $("btnStartPause").textContent = state.running ? "Süreyi Durdur" : (state.phase === "ht" ? "2. Yarıyı Başlat" : "Süreyi Başlat");
+  function incScore(team) {
+    if (team === 'A') state.scoreA++; else state.scoreB++;
+    render(true); save();
+  }
+  function decScore(team) {
+    if (team === 'A') state.scoreA = Math.max(0, state.scoreA - 1);
+    else state.scoreB = Math.max(0, state.scoreB - 1);
+    render(true); save();
   }
 
-  document.querySelectorAll("[data-delta]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var team = btn.getAttribute("data-team") === "A" ? "teamA" : "teamB";
-      var delta = parseInt(btn.getAttribute("data-delta"), 10);
-      state[team].score = Math.max(0, state[team].score + delta);
-      render();
-    });
-  });
-
-  $("inputCompetition").addEventListener("input", function(e){ state.competition = e.target.value || "KOCAELİ ŞEHİR HASTANESİ ÇALIŞANLARI FUTBOL LİGİ"; render(); });
-
-  $("inputNameA").addEventListener("input", function(e){ state.teamA.name = e.target.value || "TAKIM A"; render(); });
-  $("inputNameB").addEventListener("input", function(e){ state.teamB.name = e.target.value || "TAKIM B"; render(); });
-  $("inputColorA").addEventListener("input", function(e){ state.teamA.color = e.target.value; render(); });
-  $("inputColorB").addEventListener("input", function(e){ state.teamB.color = e.target.value; render(); });
-
-  function addPlayer(teamKey, numInput, nameInput, listId, chipsId){
-    var num = numInput.value.trim();
-    var nm = nameInput.value.trim();
-    if(!num || !nm) return;
-    var idx = -1;
-    state[teamKey].roster.forEach(function(p, i){ if(String(p.number) === num) idx = i; });
-    if(idx >= 0){ state[teamKey].roster[idx].name = nm; }
-    else { state[teamKey].roster.push({number:num, name:nm}); }
-    numInput.value = ""; nameInput.value = "";
-    renderRoster(teamKey, listId, chipsId);
-  }
-  $("addPlayerA").addEventListener("click", function(){ addPlayer("teamA", $("newPlayerNumA"), $("newPlayerNameA"), "rosterListA", "goalChipsA"); });
-  $("addPlayerB").addEventListener("click", function(){ addPlayer("teamB", $("newPlayerNumB"), $("newPlayerNameB"), "rosterListB", "goalChipsB"); });
-
-  function registerGoal(numberOwnerTeam, number, name, ownGoal){
-    var scoringTeam = ownGoal ? (numberOwnerTeam === "teamA" ? "teamB" : "teamA") : numberOwnerTeam;
-    var label = computeMinuteLabel();
-    var finalName = (name && name.trim()) ? name.trim() : ("#" + (number || "?"));
-    state[scoringTeam].score += 1;
-    state[scoringTeam].scorers.push({label:label, name:finalName, number:number, ownGoal:!!ownGoal});
-    showEvent("⚽ GOL — " + finalName + (ownGoal ? " (K.K.)" : "") + " · " + label + " · " + state[scoringTeam].name, "#D9AE64");
-    render();
+  function toggleRunning() {
+    if (state.half === 'HT' || state.half === 'FT') return;
+    state.running = !state.running;
+    render(false); save();
   }
 
-  $("goalNumA").addEventListener("input", function(){ var p = findPlayer("teamA", this.value); if(p){ $("goalNameA").value = p.name; } });
-  $("goalNumB").addEventListener("input", function(){ var p = findPlayer("teamB", this.value); if(p){ $("goalNameB").value = p.name; } });
+  function resetClock() {
+    if (state.half === 1) state.elapsed = 0;
+    else if (state.half === 2) state.elapsed = 25 * 60;
+    else state.elapsed = 0;
 
-  $("btnGoalAddA").addEventListener("click", function(){
-    var num = $("goalNumA").value.trim(); var nm = $("goalNameA").value.trim(); var own = $("goalOwnA").checked;
-    if(!num && !nm) return;
-    registerGoal("teamA", num, nm, own);
-    $("goalNumA").value = ""; $("goalNameA").value = ""; $("goalOwnA").checked = false;
-  });
-  $("btnGoalAddB").addEventListener("click", function(){
-    var num = $("goalNumB").value.trim(); var nm = $("goalNameB").value.trim(); var own = $("goalOwnB").checked;
-    if(!num && !nm) return;
-    registerGoal("teamB", num, nm, own);
-    $("goalNumB").value = ""; $("goalNameB").value = ""; $("goalOwnB").checked = false;
-  });
-
-  function undoLastGoal(teamKey){
-    if(state[teamKey].scorers.length === 0) return;
-    state[teamKey].scorers.pop();
-    state[teamKey].score = Math.max(0, state[teamKey].score - 1);
-    render();
-  }
-  $("btnGoalUndoA").addEventListener("click", function(){ undoLastGoal("teamA"); });
-  $("btnGoalUndoB").addEventListener("click", function(){ undoLastGoal("teamB"); });
-
-  $("inputHalfLength").addEventListener("change", function(e){
-    var mins = parseFloat(e.target.value);
-    if(!isNaN(mins) && mins > 0){ state.halfLengthSec = mins * 60; }
-    render();
-  });
-
-  $("btnStartPause").addEventListener("click", function(){
-    if(state.running){
-      state.elapsedAtStart = getElapsedSeconds();
-      state.running = false;
-      state.startTimestamp = null;
-    } else {
-      if(state.phase === "pre"){ state.phase = "first"; }
-      else if(state.phase === "ht"){ state.phase = "second"; state.elapsedAtStart = 0; }
-      else if(state.phase === "ft"){ render(); return; }
-      state.startTimestamp = Date.now();
-      state.running = true;
-    }
-    render();
-  });
-
-  $("btnMinus1").addEventListener("click", function(){
-    if(state.running) return;
-    state.elapsedAtStart = Math.max(0, state.elapsedAtStart - 60);
-    render();
-  });
-  $("btnPlus1").addEventListener("click", function(){
-    if(state.running) return;
-    state.elapsedAtStart = state.elapsedAtStart + 60;
-    render();
-  });
-
-  $("btnHalfTime").addEventListener("click", function(){
-    if(state.phase !== "first") return;
-    state.elapsedAtStart = getElapsedSeconds();
     state.running = false;
-    state.startTimestamp = null;
-    state.phase = "ht";
-    render();
+    render(false); save();
+  }
+
+  const HALF_ORDER = [1, 'HT', 2, 'FT'];
+  function cycleHalf() {
+    const idx = (HALF_ORDER.indexOf(state.half) + 1) % HALF_ORDER.length;
+    const next = HALF_ORDER[idx];
+    if (next === 1) { 
+      state.elapsed = 0; 
+      state.running = false; 
+    }
+    else if (next === 2) { 
+      state.elapsed = 25 * 60; 
+      state.running = false; 
+    }
+    else { 
+      state.running = false; 
+    }
+    state.half = next;
+    render(false); save();
+  }
+
+  function togglePanel() {
+    state.panelVisible = !state.panelVisible;
+    render(false); save();
+  }
+
+  setInterval(() => {
+    if (state.running) {
+      state.elapsed++;
+      clockEl.innerHTML = formatClock();
+      save();
+    }
+  }, 1000);
+
+  nameA.addEventListener('blur', () => { state.teamAName = nameA.textContent.trim() || 'EV SAHİBİ'; render(false); save(); });
+  nameB.addEventListener('blur', () => { state.teamBName = nameB.textContent.trim() || 'DEPLASMAN'; render(false); save(); });
+  nameA.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameA.blur(); } });
+  nameB.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameB.blur(); } });
+  competitionEl.addEventListener('blur', () => { state.competition = competitionEl.textContent.trim() || 'HALI SAHA LİGİ'; render(false); save(); });
+  competitionEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); competitionEl.blur(); } });
+
+  colorA.addEventListener('input', () => { state.teamAColor = colorA.value; render(false); save(); });
+  colorB.addEventListener('input', () => { state.teamBColor = colorB.value; render(false); save(); });
+
+  $('plusA').addEventListener('click', () => incScore('A'));
+  $('minusA').addEventListener('click', () => decScore('A'));
+  $('plusB').addEventListener('click', () => incScore('B'));
+  $('minusB').addEventListener('click', () => decScore('B'));
+  startPauseBtn.addEventListener('click', toggleRunning);
+  $('resetClock').addEventListener('click', resetClock);
+  $('cycleHalf').addEventListener('click', cycleHalf);
+
+  checkerToggle.addEventListener('change', () => {
+    document.body.classList.toggle('preview-checker', checkerToggle.checked);
   });
 
-  $("btnStartSecond").addEventListener("click", function(){
-    if(state.phase !== "ht") return;
-    state.phase = "second";
-    state.elapsedAtStart = 0;
-    state.running = true;
-    state.startTimestamp = Date.now();
-    render();
+  document.addEventListener('keydown', e => {
+    if (document.activeElement.isContentEditable) return;
+    switch (e.key.toLowerCase()) {
+      case 'q': incScore('A'); break;
+      case 'a': decScore('A'); break;
+      case 'p': incScore('B'); break;
+      case 'l': decScore('B'); break;
+      case ' ': e.preventDefault(); toggleRunning(); break;
+      case 'r': resetClock(); break;
+      case 'h': cycleHalf(); break;
+      case 'c': togglePanel(); break;
+    }
   });
 
-  $("btnFullTime").addEventListener("click", function(){
-    if(state.phase !== "second") return;
-    state.elapsedAtStart = getElapsedSeconds();
-    state.running = false;
-    state.startTimestamp = null;
-    state.phase = "ft";
-    render();
-  });
-
-  $("btnFullReset").addEventListener("click", function(){
-    if(!confirm("Maçı sıfırlamak istediğine emin misin? Skor, kartlar, gol listesi ve süre sıfırlanacak (kadrolar kalır).")) return;
-    state.teamA.score = 0; state.teamA.yellow = 0; state.teamA.red = 0; state.teamA.scorers = [];
-    state.teamB.score = 0; state.teamB.yellow = 0; state.teamB.red = 0; state.teamB.scorers = [];
-    state.phase = "pre";
-    state.running = false;
-    state.elapsedAtStart = 0;
-    state.startTimestamp = null;
-    render();
-  });
-
-  document.querySelectorAll("[data-card]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var teamLetter = btn.getAttribute("data-team");
-      var teamKey = teamLetter === "A" ? "teamA" : "teamB";
-      var type = btn.getAttribute("data-card");
-      var numInput = teamLetter === "A" ? $("cardNumA") : $("cardNumB");
-      var num = numInput.value.trim();
-      var player = findPlayer(teamKey, num);
-
-      if(type === "yellow"){ state[teamKey].yellow += 1; } else { state[teamKey].red += 1; }
-
-      var who = state[teamKey].name + (num ? " • #" + num + (player ? " " + player.name : "") : "");
-      var icon = type === "yellow" ? "🟨 SARI KART" : "🟥 KIRMIZI KART";
-      var color = type === "yellow" ? "#FFD400" : "#E9302A";
-      showEvent(icon + " — " + who, color, 4000);
-
-      numInput.value = "";
-      render();
-    });
-  });
-
-  renderRoster("teamA", "rosterListA", "goalChipsA");
-  renderRoster("teamB", "rosterListB", "goalChipsB");
-  setInterval(render, 200);
-  render();
-})();
+  render(false);
 </script>
 </body>
 </html>
